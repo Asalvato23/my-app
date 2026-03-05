@@ -1,4 +1,22 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import TopPicksList from "./components/TopPicksList";
+
+function slugify(input: string) {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export default function Home() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+
   const signalCards = [
     {
       label: "BUY",
@@ -24,22 +42,117 @@ export default function Home() {
       ring: "ring-fuchsia-400/30",
       dot: "bg-fuchsia-400",
     },
-  ];
+  ] as const;
 
   const categories = [
     { name: "GPUs", hint: "RTX / RX", tag: "Trending", glow: "hover:ring-emerald-400/25" },
     { name: "CPUs", hint: "Ryzen / Intel", tag: "Hot", glow: "hover:ring-sky-400/25" },
     { name: "RAM", hint: "DDR5", tag: "Stable", glow: "hover:ring-fuchsia-400/25" },
     { name: "Motherboards", hint: "AM5 / LGA", tag: "Watchlist", glow: "hover:ring-indigo-400/25" },
-  ];
+  ] as const;
 
   const picks = [
-    { name: "RTX 5070", reason: "Price dipped below 30-day avg", signal: "BUY" },
-    { name: "Ryzen 5 7600", reason: "Best performance per dollar", signal: "BUY" },
-    { name: "DDR5 32GB 6000", reason: "Flat pricing, good bundles", signal: "HOLD" },
-    { name: "B650 WiFi", reason: "Slightly elevated vs trendline", signal: "HOLD" },
-    { name: "RTX 4090", reason: "Premium inflated, low value", signal: "AVOID" },
-  ];
+    {
+      id: "rtx-5070",
+      name: "RTX 5070",
+      note: "Price dipped below 30-day avg",
+      signal: "BUY",
+      confidence: 82,
+      spark: [699, 691, 688, 680, 672, 668, 664, 659],
+      why: {
+        id: "rtx-5070",
+        name: "RTX 5070",
+        signal: "BUY",
+        confidence: 82,
+        metrics: { priceNow: 659, avg30d: 690, vsTrendPct: -5.6, volatility: "Medium" },
+        reasons: [
+          "Price is meaningfully below 30D average (value entry).",
+          "Downtrend is slowing — recent stabilization suggests better timing.",
+          "Demand remains strong, but current pricing looks favorable vs trend.",
+        ],
+      },
+    },
+    {
+      id: "ryzen-5-7600",
+      name: "Ryzen 5 7600",
+      note: "Best performance per dollar",
+      signal: "BUY",
+      confidence: 79,
+      spark: [189, 185, 182, 179, 176, 178, 175, 172],
+      why: {
+        id: "ryzen-5-7600",
+        name: "Ryzen 5 7600",
+        signal: "BUY",
+        confidence: 79,
+        metrics: { priceNow: 172, avg30d: 184, vsTrendPct: -4.2, volatility: "Low" },
+        reasons: [
+          "Strong value vs competing CPUs in this tier.",
+          "Price has drifted lower over the last month.",
+          "Stable pricing suggests good buy timing.",
+        ],
+      },
+    },
+    {
+      id: "ddr5-32gb-6000",
+      name: "DDR5 32GB 6000",
+      note: "Flat pricing, good bundles",
+      signal: "HOLD",
+      confidence: 63,
+      spark: [122, 121, 119, 120, 121, 120, 121, 121],
+      why: {
+        id: "ddr5-32gb-6000",
+        name: "DDR5 32GB 6000",
+        signal: "HOLD",
+        confidence: 63,
+        metrics: { priceNow: 121, avg30d: 120, vsTrendPct: +0.8, volatility: "Low" },
+        reasons: [
+          "Pricing is stable — no strong edge to buying today.",
+          "Bundles can be good, but baseline price hasn’t dipped.",
+          "Waiting may improve value if promos pop up.",
+        ],
+      },
+    },
+    {
+      id: "b650-wifi",
+      name: "B650 WiFi",
+      note: "Slightly elevated vs trendline",
+      signal: "HOLD",
+      confidence: 58,
+      spark: [179, 182, 184, 186, 185, 187, 188, 186],
+      why: {
+        id: "b650-wifi",
+        name: "B650 WiFi",
+        signal: "HOLD",
+        confidence: 58,
+        metrics: { priceNow: 186, avg30d: 182, vsTrendPct: +1.9, volatility: "Medium" },
+        reasons: [
+          "Price is a bit above the recent average.",
+          "Good boards exist at this tier — waiting could save money.",
+          "No urgent catalyst suggesting buy-now value.",
+        ],
+      },
+    },
+    {
+      id: "rtx-4090",
+      name: "RTX 4090",
+      note: "Premium inflated, low value",
+      signal: "AVOID",
+      confidence: 71,
+      spark: [1899, 1940, 1999, 2050, 2080, 2140, 2199, 2299],
+      why: {
+        id: "rtx-4090",
+        name: "RTX 4090",
+        signal: "AVOID",
+        confidence: 71,
+        metrics: { priceNow: 2299, avg30d: 2040, vsTrendPct: +9.3, volatility: "High" },
+        reasons: [
+          "Price is significantly above the 30D average.",
+          "Value-per-dollar is weak compared to alternatives.",
+          "High volatility + premium pricing makes timing risky.",
+        ],
+      },
+    },
+  ] as const;
 
   return (
     <main className="min-h-screen bg-black text-white">
@@ -61,15 +174,26 @@ export default function Home() {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <button className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 hover:bg-white/10">
+            <Link
+              href="/watchlist"
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 hover:bg-white/10"
+            >
               Watchlist
-            </button>
-            <button className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 hover:bg-white/10">
+            </Link>
+
+            <Link
+              href="/insights"
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 hover:bg-white/10"
+            >
               Insights
-            </button>
-            <button className="rounded-xl bg-gradient-to-r from-cyan-400 to-fuchsia-500 px-4 py-2 text-sm font-semibold text-black hover:opacity-90">
+            </Link>
+
+            <Link
+              href="/get-signals"
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 hover:bg-white/10"
+            >
               Get Signals
-            </button>
+            </Link>
           </div>
         </header>
 
@@ -86,21 +210,35 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Search */}
+              {/* Search (click + Enter) */}
               <div className="w-full md:w-[420px]">
-                <div className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-2">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const slug = slugify(query);
+                    if (!slug) return;
+                    router.push(`/parts/${slug}`);
+                  }}
+                  className="flex items-center gap-2 rounded-2xl border border-white/10 bg-black/40 p-2"
+                >
                   <div className="h-9 w-9 rounded-xl bg-white/5 grid place-items-center text-white/70">⌕</div>
+
                   <input
-                    className="w-full bg-transparent px-2 py-2 text-sm outline-none placeholder:text-white/40"
-                    placeholder="Search a part (ex: RTX 5070, Ryzen 7600, B650...)"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    className="w-full bg-transparent px-2 py-2 text-sm text-white/90 placeholder:text-white/40 outline-none"
+                    placeholder="Search a part (ex: RTX 5070, Ryzen 7600)"
                   />
-                  <button className="rounded-xl bg-white/10 px-4 py-2 text-sm text-white/80 hover:bg-white/15">
+
+                  <button
+                    type="submit"
+                    className="rounded-xl bg-white/10 px-4 py-2 text-sm text-white/80 hover:bg-white/15"
+                  >
                     Search
                   </button>
-                </div>
-                <div className="mt-2 text-xs text-white/50">
-                  Tip: start with “RTX”, “Ryzen”, “DDR5”, “B650”, “Z790”
-                </div>
+                </form>
+
+                <div className="mt-2 text-xs text-white/50">Tip: start with “RTX”, “Ryzen”, “DDR5”, “B650”, “Z790”</div>
               </div>
             </div>
           </div>
@@ -114,6 +252,7 @@ export default function Home() {
               >
                 <div className="flex items-center justify-between">
                   <div className="text-sm text-white/60">Signal</div>
+
                   <div className="flex items-center gap-2 text-xs text-white/60">
                     <span className={`h-2 w-2 rounded-full ${c.dot}`} />
                     Live
@@ -150,13 +289,16 @@ export default function Home() {
                   <div className="text-sm text-white/60">Quick Filters</div>
                   <div className="text-xl font-semibold mt-1">Categories</div>
                 </div>
-                <button className="text-sm text-white/70 hover:text-white">View all →</button>
+                <button className="text-sm text-white/70 hover:text-white" type="button">
+                  View all →
+                </button>
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-3">
                 {categories.map((cat) => (
                   <button
                     key={cat.name}
+                    type="button"
                     className={`group rounded-2xl border border-white/10 bg-black/30 p-4 text-left ring-1 ring-transparent ${cat.glow} hover:bg-black/40 transition`}
                   >
                     <div className="flex items-center justify-between">
@@ -166,9 +308,7 @@ export default function Home() {
                       </span>
                     </div>
                     <div className="mt-1 text-xs text-white/55">{cat.hint}</div>
-                    <div className="mt-3 text-xs text-white/60 group-hover:text-white/80">
-                      Open signals →
-                    </div>
+                    <div className="mt-3 text-xs text-white/60 group-hover:text-white/80">Open signals →</div>
                   </button>
                 ))}
               </div>
@@ -182,19 +322,25 @@ export default function Home() {
                   <div className="text-xl font-semibold mt-1">Momentum + Value</div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 hover:bg-white/10">
+                  <button
+                    type="button"
+                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 hover:bg-white/10"
+                  >
                     7D
                   </button>
-                  <button className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs text-white">
+                  <button type="button" className="rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-xs text-white">
                     30D
                   </button>
-                  <button className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 hover:bg-white/10">
+                  <button
+                    type="button"
+                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70 hover:bg-white/10"
+                  >
                     90D
                   </button>
                 </div>
               </div>
 
-              {/* Fake chart placeholder (looks like a chart) */}
+              {/* Fake chart placeholder */}
               <div className="mt-4 rounded-2xl border border-white/10 bg-black/35 p-4">
                 <div className="flex items-center justify-between text-xs text-white/60">
                   <span>Value vs Trendline</span>
@@ -211,7 +357,7 @@ export default function Home() {
                       <div
                         key={i}
                         className="self-end rounded-lg bg-white/10"
-                        style={{ height: `${20 + (i % 5) * 14 + (i * 3) % 18}px` }}
+                        style={{ height: `${20 + (i % 5) * 14 + ((i * 3) % 18)}px` }}
                       />
                     ))}
                   </div>
@@ -236,44 +382,10 @@ export default function Home() {
           </div>
 
           {/* TOP PICKS */}
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-sm text-white/60">Today</div>
-                <div className="text-xl font-semibold mt-1">Top picks</div>
-              </div>
-              <button className="rounded-xl bg-white/10 px-4 py-2 text-sm text-white/80 hover:bg-white/15">
-                Export
-              </button>
-            </div>
+          <TopPicksList picks={picks as any} />
 
-            <div className="mt-4 divide-y divide-white/10 rounded-2xl border border-white/10 bg-black/35">
-              {picks.map((p) => (
-                <div key={p.name} className="flex items-center justify-between gap-3 p-4">
-                  <div>
-                    <div className="font-semibold">{p.name}</div>
-                    <div className="text-sm text-white/55">{p.reason}</div>
-                  </div>
-
-                  <span
-                    className={[
-                      "rounded-full px-3 py-1 text-xs font-semibold border",
-                      p.signal === "BUY"
-                        ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
-                        : p.signal === "HOLD"
-                        ? "border-sky-400/30 bg-sky-400/10 text-sky-200"
-                        : "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-200",
-                    ].join(" ")}
-                  >
-                    {p.signal}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-4 text-xs text-white/50">
-              Signals shown here are placeholders — next step is wiring real pricing data + your scoring rules.
-            </div>
+          <div className="mt-4 text-xs text-white/50">
+            Signals shown here are placeholders — next step is wiring real pricing data + your scoring rules.
           </div>
 
           {/* FOOTER */}
